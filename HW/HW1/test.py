@@ -48,13 +48,13 @@ class Net(nn.Module):
         return x
 
 net = Net().to(device)
-print(net)
+print(net) # 印出神經網路的相關資訊
 
 
 # Parameters
-criterion = nn.CrossEntropyLoss()
-lr = 0.001
-epochs = 3
+criterion = nn.CrossEntropyLoss() # 使用 cross entropy作為loss function之方式
+lr = 0.001 # learning rate
+epochs = 3 # 訓練3次
 optimizer = optim.SGD(net.parameters(), lr=lr, momentum=0.9)
 
 
@@ -82,7 +82,7 @@ for epoch in range(epochs):
         if times % 100 == 99 or times+1 == len(trainLoader):
             print('[%d/%d, %d/%d] loss: %.3f' % (epoch+1, epochs, times+1, len(trainLoader), running_loss/2000))
 
-print('Finished Training')
+print('Finished Training\n')
 
 
 # Test
