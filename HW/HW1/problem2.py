@@ -34,7 +34,7 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 32, kernel_size = (3, 3), stride = (1, 1), padding = (1, 1))
         self.conv2 = nn.Conv2d(in_channels = 32, out_channels = 64, kernel_size = (3, 3), stride = (1, 2))
         
-        self.pool = nn.MaxPool2d(kernel_size = (2, 2),stride = (2, 2))
+        self.max_pooling = nn.MaxPool2d(kernel_size = (2, 2),stride = (2, 2))
         self.dropout = nn.Dropout(p = 0.25)
         
         self.padding1 = nn.ZeroPad2d(8)
@@ -48,16 +48,19 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
+        x = self.padding1(x)
         x = F.relu(x)
-        x = self.pool(x)
+        x = self.max_pooling(x)
         x = self.padding1(x)
         x = self.dropout(x)
+
         x = self.conv2(x)
         x = self.padding2(x)
         x = F.relu(x)
-        x = self.pool(x)
+        x = self.max_pooling(x)
         x = self.padding1(x)
         x = self.dropout(x)
+
         x = x.view(-1, 64*32*32) # -1 -> 不指定flatten的大小
 
         x = self.fc1(x)
