@@ -4,60 +4,74 @@ from torch.optim import optimizer
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # 0) prepare data
-x, y = np.empty((0))
-csv_file = np.genfromtxt('HW1-1.csv', delimiter=',', skip_header=1)
+x = np.empty((0))
+y = np.empty((0))
+csv_file = np.genfromtxt('HW1-1.csv', delimiter=',', skip_header = 1)
 for data in csv_file: # 逐筆放入陣列中
     x = np.append(x, float(data[0]))
     y = np.append(y, float(data[1]))
-tensor_x, tensor_y = torch.Tensor(x), torch.Tensor(y) # 將 numpy array 轉化成 tensor
-tensor_x, tensor_y = tensor_x.view(tensor_x.shape[0], 1), tensor_y.view(tensor_y.shape[0], 1)
+tensor_x = torch.tensor(x, dtype=torch.float32) # 將 numpy array 轉化成 tensor
+tensor_y = torch.tensor(y, dtype=torch.float32)
+tensor_x = tensor_y.view(tensor_y.shape[0], 1)
+tensor_y = tensor_x.view(tensor_x.shape[0], 1)
 
 
-# 1) model
+# 1.model
 class LinearRegression(nn.Module):
     def __init__(self):
         super(LinearRegression, self).__init__()
 
-        # define layers
+        #定義多層神經網路
         self.layer1 = nn.Linear(1, 32)
         self.layer2 = nn.Linear(32, 128)
         self.layer3 = nn.Linear(128, 64)
         self.layer4 = nn.Linear(64, 1)
 
-        #dropout
+        #設定dropout
         self.dropout = nn.Dropout(0.25)
         
     def forward(self, x):
-        x = F.relu(self.layer1(x))
+        x = self.layer1(x)
+        x = F.relu(x)
         x = self.dropout(x)
-        x = F.relu(self.layer2(x))
+
+        x = self.layer2(x)
+        x = F.relu(x)
         x = self.dropout(x)
-        x = F.relu(self.layer3(x))
+
+        x = self.layer3(x)
+        x = F.relu(x)
         x = self.dropout(x)
-        x = F.relu(self.layer4(x))
+
+        x = self.layer4(x)
         return x
 
 model = LinearRegression() #建立model
 
 
 # 2) loss and optimizer
-learning_rate = 0.01
+learning_rate = 0.01 # learning rate
 criterion = nn.MSELoss() # loss function
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate) # gradient descent
 
 
 # 3) training loop
 epochs = 5
-training_times = 8000
+training_time = 15000
 for epoch in range(epochs):
     running_loss = 0.0
 
-    for time in range(training_times):
+    for time in range(training_time):
         # forward pass and loss
         y_predicted = model.forward(tensor_x)
         loss = criterion(y_predicted, tensor_y)
+
+        #將梯度歸0
+        optimizer.zero_grad()
 
         # backward pass
         loss.backward()
@@ -65,15 +79,15 @@ for epoch in range(epochs):
         # update
         optimizer.step()
         
-        # init optimizer
-        optimizer.zero_grad()
-
+        # 計算loss
         running_loss += loss.item()
 
         if(time % 100 == 99):
-            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_times, running_loss))
+            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_time, running_loss/100))
+            running_loss = 0
 
-# show in image
+
+# 印出結果
 predicted = model(tensor_x).detach().numpy()
 plt.plot(tensor_x, tensor_y, 'ro')
 plt.plot(tensor_x, predicted, 'b')

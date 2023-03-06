@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
+from torchsummary import summary
 
 
 # GPU
@@ -28,9 +29,9 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 
 # Model structure
-class Net(nn.Module):
+class Model(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(Model, self).__init__()
         self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 32, kernel_size = (3, 3), stride = (1, 1), padding = (1, 1))
         self.conv2 = nn.Conv2d(in_channels = 32, out_channels = 64, kernel_size = (3, 3), stride = (1, 2))
         
@@ -48,7 +49,6 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.padding1(x)
         x = F.relu(x)
         x = self.max_pooling(x)
         x = self.padding1(x)
@@ -74,7 +74,7 @@ class Net(nn.Module):
 
         return x
 
-net = Net().to(device)
+net = Model().to(device)
 print(net) # 印出神經網路的相關資訊
 
 
@@ -114,19 +114,29 @@ print('Finished Training\n')
 
 
 # Test
-correct = 0
+# top 1 和 top 5的結果
+top1_correct = 0
+top5_correct = 0
 total = 0
 with torch.no_grad():
     for data in testLoader:
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
+
         outputs = net(inputs)
-        _, predicted = torch.max(outputs.data, 1)
+        labels_resize = labels.view(-1, 1)
+
+        _, top1_predicted = torch.max(outputs.data, 1)
+        _, top5_predicted = outputs.topk(5, 1, True, True)
+
         total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+        top1_correct += (top1_predicted == labels).sum().item()
+        top5_correct += (top5_predicted == labels_resize).sum().item()
 
-print('Accuracy of the network on the 10000 test inputs: %d %%' % (100 * correct / total))
+print('Accuracy of the network on the 10000 test inputs: %d %%' % (100 * top1_correct / total))
+print('Accuracy of the network on the 10000 test inputs: %d %%' % (100 * top5_correct / total))
 
+# 每個 class 的準確度
 class_correct = list(0. for i in range(10))
 class_total = list(0. for i in range(10))
 with torch.no_grad():
@@ -143,3 +153,5 @@ with torch.no_grad():
 
 for i in range(10):
     print('Accuracy of %5s : %2d %%' % (classes[i], 100 * class_correct[i] / class_total[i]))
+
+summary((net), (3, 32, 32))
