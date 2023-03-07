@@ -78,7 +78,7 @@ for epoch in range(epochs):
         running_loss += loss.item()
 
         if(time % 100 == 99):
-            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_time, running_loss/100))
+            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_time, running_loss))
             running_loss = 0
 
 
