@@ -11,13 +11,18 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 x = np.empty((0))
 y = np.empty((0))
 csv_file = np.genfromtxt('HW1-1.csv', delimiter=',', skip_header = 1)
+csv_file = csv_file.tolist()
+csv_file.sort(key = lambda l:l[0])
+csv_file = np.array(csv_file)
+
 for data in csv_file: # 逐筆放入陣列中
     x = np.append(x, float(data[0]))
     y = np.append(y, float(data[1]))
+
 tensor_x = torch.tensor(x, dtype=torch.float32) # 將 numpy array 轉化成 tensor
 tensor_y = torch.tensor(y, dtype=torch.float32)
-tensor_x = tensor_y.view(tensor_y.shape[0], 1)
-tensor_y = tensor_x.view(tensor_x.shape[0], 1)
+tensor_x = tensor_x.view(tensor_x.shape[0], 1)
+tensor_y = tensor_y.view(tensor_y.shape[0], 1)
 
 
 # 1.model
@@ -26,10 +31,8 @@ class LinearRegression(nn.Module):
         super(LinearRegression, self).__init__()
 
         #定義多層神經網路
-        self.layer1 = nn.Linear(1, 32)
-        self.layer2 = nn.Linear(32, 128)
-        self.layer3 = nn.Linear(128, 64)
-        self.layer4 = nn.Linear(64, 1)
+        self.layer1 = nn.Linear(1, 1024)
+        self.layer2 = nn.Linear(1024, 1)
 
         #設定dropout
         self.dropout = nn.Dropout(0.25)
@@ -40,28 +43,20 @@ class LinearRegression(nn.Module):
         x = self.dropout(x)
 
         x = self.layer2(x)
-        x = F.relu(x)
-        x = self.dropout(x)
-
-        x = self.layer3(x)
-        x = F.relu(x)
-        x = self.dropout(x)
-
-        x = self.layer4(x)
         return x
 
 model = LinearRegression() #建立model
 
 
 # 2) loss and optimizer
-learning_rate = 0.01 # learning rate
+learning_rate = 0.001 # learning rate
 criterion = nn.MSELoss() # loss function
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate) # gradient descent
 
 
 # 3) training loop
 epochs = 5
-training_time = 15000
+training_time = 10000
 for epoch in range(epochs):
     running_loss = 0.0
 
