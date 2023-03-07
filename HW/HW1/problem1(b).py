@@ -38,12 +38,12 @@ def forward(X):
 
 
 # 2) 設定相關參數
-learning_rate = 0.1 # learning rate
+learning_rate = 0.01 # learning rate
 criterion = nn.MSELoss() # loss function
 
 
 # 3) training loop
-epochs = 100
+epochs = 50
 training_time = 500
 for epoch in range(epochs):
     running_loss = 0.0
@@ -60,7 +60,7 @@ for epoch in range(epochs):
         running_loss += loss.item()
 
         if(time % 100 == 99):
-            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_time, running_loss/100))
+            print("Epoch: [%d/%d], Iteration: [%s/%s], loss: %.3f" % (epoch+1, epochs, time+1, training_time, running_loss))
             running_loss = 0
 
         # 藉由每次訓練去更新 X 的係數
@@ -77,17 +77,17 @@ for epoch in range(epochs):
 
 
 # 印出結果
-print("w0 = ", float(w0))
-print("w1 = ", float(w1))
-print("w2 = ", float(w2))
-print("w3 = ", float(w3))
+print("w0 =", round(float(w0), 3))
+print("w1 =", round(float(w1), 3))
+print("w2 =", round(float(w2), 3))
+print("w3 =", round(float(w3), 3))
 
-# def diff(X):
-#     return w1 + 2 *(w2 * X) + 3 *(w3 * x**2)
+def diff(X):
+    return float(w1 + 2 *(w2 * X) + 3 *(w3 * X**2))
 
-# print("f'(3.0) = ", diff(3.0))
-# print("f'(0.1) = ", diff(0.1))
-# print("f'(-0.5) = ", diff(-0.5))
+print("f'(3.0) = ", round(diff(float(3.0)), 3))
+print("f'(0.1) = ", round(diff(float(0.1)), 3))
+print("f'(-0.5) = ", round(diff(float(-0.5)), 3))
 
 predicted = forward(tensor_x).detach().numpy()
 plt.plot(tensor_x, tensor_y, 'ro')
